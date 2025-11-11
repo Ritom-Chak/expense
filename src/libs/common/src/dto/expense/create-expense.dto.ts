@@ -1,17 +1,13 @@
 import {IsString, IsNotEmpty, IsNumber, IsOptional} from 'class-validator';
 
-export class UpdateExpenseDto {
-    @IsNotEmpty()
-    @IsNumber()
-    id: number;
-
+export class CreateExpenseDto {
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     title: string;
 
     @IsNumber()
-    @IsOptional()
-    amount: string;
+    @IsNotEmpty()
+    amount: number;
 
     @IsString()
     @IsOptional()
