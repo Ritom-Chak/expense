@@ -110,7 +110,7 @@ export class ExpenseService {
 
     async createExpense(
         createExpenseDto: CreateExpenseDto,
-        //user: JwtPayload,
+        user: JwtPayload,
     ): Promise<Expense> {
         const { title,amount,category } = createExpenseDto;
 
