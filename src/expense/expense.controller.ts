@@ -51,10 +51,8 @@ export class ExpenseController {
     @Post()
     async createExpense(
         @Body() createExpenseDto: CreateExpenseDto,
-        @GetUser() user: JwtPayload,
     ): Promise<Expense> {
-        this.logger.info('Creating the expense.');
-        return this.expenseService.createExpense(createExpenseDto, user);
+        return this.expenseService.createExpense(createExpenseDto, null);
     }
 
     @Put()

@@ -23,5 +23,7 @@
         "libs/common/src/*"
       ]
     }
-  }
+  },
+  "include": ["src/**/*.ts"]
+
 }

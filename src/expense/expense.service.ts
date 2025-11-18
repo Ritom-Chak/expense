@@ -1,13 +1,14 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import  {Expense, CreateExpenseDto,DeleteExpenseDto,GetExpensesDto,GetExpenseDto,UpdateExpenseDto,Providers,SortOrder} from "../libs/common/src";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import  {Expense, CreateExpenseDto,DeleteExpenseDto,GetExpensesDto,GetExpenseDto,UpdateExpenseDto,SortOrder} from "../libs/common/src";
 import { Repository } from 'typeorm';
 import {JwtPayload} from "jsonwebtoken";
 import { PinoLogger } from 'nestjs-pino';
+import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
 export class ExpenseService {
     constructor(
-        @Inject(Providers.EXPENSE_REPOSITORY)
+        @InjectRepository(Expense)
         private readonly expenseRepository: Repository<Expense>,
         private readonly logger: PinoLogger,
     ) {
@@ -109,7 +110,7 @@ export class ExpenseService {
 
     async createExpense(
         createExpenseDto: CreateExpenseDto,
-        user: JwtPayload,
+        //user: JwtPayload,
     ): Promise<Expense> {
         const { title,amount,category } = createExpenseDto;
 
@@ -128,10 +129,12 @@ export class ExpenseService {
             );
             return expense;
         } catch (error) {
-            this.logger.error(
-                `Failed to create expense`,
-                error.stack,
-            );
+            this.logger.error("DB ERROR:", {
+                message: error.message,
+                code: error.code,
+                detail: error.detail,
+            });
+            throw error; // TEMPORARILY rethrow the original error
             throw new NotFoundException();
         }
     }

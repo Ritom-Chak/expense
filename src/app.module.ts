@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {Expense} from "./libs/common/src";
+import { LoggerModule } from 'nestjs-pino';
+
+import { Expense } from './libs/common/src';
 import { ExpenseModule } from './expense/expense.module';
 
 @Module({
     imports: [
+        LoggerModule.forRoot({
+            pinoHttp: {
+                level: 'debug',
+            },
+        }),
+
         TypeOrmModule.forRoot({
             type: 'mysql',
             host: 'mysql',
@@ -13,7 +21,7 @@ import { ExpenseModule } from './expense/expense.module';
             password: '',
             database: 'expensedb',
             entities: [Expense],
-            synchronize: false,
+            synchronize: true,
         }),
 
         ExpenseModule,
