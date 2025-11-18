@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS expense (
+CREATE TABLE IF NOT EXISTS expensedb  (
                                         id INT PRIMARY KEY AUTO_INCREMENT,
                                         title VARCHAR(255) NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
