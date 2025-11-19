@@ -1,6 +1,6 @@
 import {DataSource} from "typeorm";
 import {Providers} from "../constants";
-import  {Expense} from "../entity";
+import {Expense} from "../entity";
 
 export const ExpenseProviders = [
     {

@@ -1,7 +1,8 @@
 import {IsNotEmpty, IsNumber} from "class-validator";
+import {Type} from "class-transformer";
 
 export class GetExpenseDto {
-    @IsNotEmpty()
+    @Type(() => Number)
     @IsNumber()
     id: number;
 }

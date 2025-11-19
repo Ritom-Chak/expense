@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import  {Expense, CreateExpenseDto,DeleteExpenseDto,GetExpensesDto,GetExpenseDto,UpdateExpenseDto,SortOrder} from "../libs/common/src";
-import { Repository } from 'typeorm';
+import {Injectable, NotFoundException} from '@nestjs/common';
+import {
+    Expense,
+    CreateExpenseDto,
+    DeleteExpenseDto,
+    GetExpensesDto,
+    GetExpenseDto,
+    UpdateExpenseDto,
+    SortOrder
+} from "../libs/common/src";
+import {Repository} from 'typeorm';
 import {JwtPayload} from "jsonwebtoken";
-import { PinoLogger } from 'nestjs-pino';
+import {PinoLogger} from 'nestjs-pino';
 import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
@@ -16,13 +24,13 @@ export class ExpenseService {
     }
 
     async getExpenses(getExpensesDto: GetExpensesDto): Promise<any> {
-        const { search } = getExpensesDto;
+        const {search} = getExpensesDto;
         const query = this.expenseRepository.createQueryBuilder('expense');
 
         if (getExpensesDto.search) {
             query.andWhere(
                 '(LOWER(expense.title) LIKE LOWER(:search)  OR expense.id like :search)',
-                { search: `%${search}%` },
+                {search: `%${search}%`},
             );
         }
 
@@ -60,7 +68,7 @@ export class ExpenseService {
             const totalCount = await queryCount.getCount();
 
             this.logger.info('Fetched expenses.');
-            return { expenses, filterCount, totalCount };
+            return {expenses, filterCount, totalCount};
         } catch (error) {
             this.logger.error('Failed to get the expenses.', error.stack);
             throw new NotFoundException();
@@ -68,10 +76,10 @@ export class ExpenseService {
     }
 
     async getExpenseById(getExpenseDto: GetExpenseDto): Promise<any> {
-        const { id } = getExpenseDto;
+        const {id} = getExpenseDto;
         const query = this.expenseRepository
             .createQueryBuilder('expense')
-            .where({ id: id });
+            .where({id: id});
 
         try {
             const expense = await query.getOne();
@@ -81,7 +89,7 @@ export class ExpenseService {
             }
             this.logger.info(`Fetched expense with id: ${id}`);
 
-            return { expense };
+            return {expense};
         } catch (error) {
             this.logger.error(`Failed to get expense with id: ${id}`, error.stack);
             throw new NotFoundException();
@@ -91,7 +99,7 @@ export class ExpenseService {
     async fetchExpense(id: number): Promise<Expense> {
         const query = this.expenseRepository
             .createQueryBuilder('expense')
-            .where({ id: id });
+            .where({id: id});
 
         try {
             const expense = await query.getOne();
@@ -112,7 +120,7 @@ export class ExpenseService {
         createExpenseDto: CreateExpenseDto,
         user: JwtPayload,
     ): Promise<Expense> {
-        const { title,amount,category } = createExpenseDto;
+        const {title, amount, category} = createExpenseDto;
 
         const expense = this.expenseRepository.create({
             title,
@@ -144,7 +152,7 @@ export class ExpenseService {
         user: JwtPayload,
     ): Promise<Expense> {
 
-        const { id, title,amount, category } = updateExpenseDto;
+        const {id, title, amount, category} = updateExpenseDto;
 
         let expense = await this.fetchExpense(id);
 
@@ -167,7 +175,7 @@ export class ExpenseService {
     }
 
     async deleteExpense(deleteExpenseDto: DeleteExpenseDto): Promise<void> {
-        const { id } = deleteExpenseDto;
+        const {id} = deleteExpenseDto;
         try {
             const result = await this.expenseRepository.softDelete(id);
             if (result.affected === 0) {

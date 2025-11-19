@@ -19,7 +19,7 @@ import {
 } from "../libs/common/src"
 import {JwtPayload} from "jsonwebtoken";
 import {GetUser} from "../libs/common/src/decorator";
-import { PinoLogger } from 'nestjs-pino';
+import {PinoLogger} from 'nestjs-pino';
 
 @Controller('expenses')
 export class ExpenseController {
@@ -32,7 +32,7 @@ export class ExpenseController {
 
     @Get()
     async getExpenses(
-        @Query(new ValidationPipe({ transform: true }))
+        @Query(new ValidationPipe({transform: true}))
         getExpensesDto: GetExpensesDto,
     ): Promise<Expense[]> {
         this.logger.info('Fetching the expenses.');
@@ -41,7 +41,7 @@ export class ExpenseController {
 
     @Get('/one')
     async getExpenseById(
-        @Query(new ValidationPipe({ transform: true }))
+        @Query(new ValidationPipe({transform: true}))
         getExpenseDto: GetExpenseDto,
     ): Promise<Expense> {
         this.logger.info('Fetching the expense by id.');
@@ -66,7 +66,7 @@ export class ExpenseController {
 
     @Delete()
     async deleteExpense(
-        @Query(new ValidationPipe({ transform: true }))
+        @Query(new ValidationPipe({transform: true}))
         deleteExpenseDto: DeleteExpenseDto,
     ): Promise<void> {
         this.logger.info('Deleting the expense.');
