@@ -71,29 +71,53 @@ Make sure the following variables are set in your production environment:
 
 ### GitHub Actions (CI)
 
-A `.github/workflows/ci.yml` file is included to automatically build and lint your code on every push to `main`. This ensures that only valid code is deployed.
+A `.github/workflows/ci.yml` file is included to automatically build and lint your code on every push. This ensures that only valid code is deployed.
 
-### Continuous Deployment (CD) with PaaS
+### Continuous Deployment (CD) with Cloud Providers
 
-For the easiest "Push to Deploy" experience, we recommend using a PaaS provider like **Railway** or **Render**.
+For a "Push to Deploy" experience on major cloud providers, we recommend **AWS App Runner** or **Google Cloud Run**. These services handle container orchestration and scaling automatically.
 
-#### Railway.app (Recommended)
+#### Option 1: AWS App Runner (Recommended for AWS)
 
-1.  **Sign Up/Login**: Go to [Railway.app](https://railway.app/) and log in with GitHub.
-2.  **New Project**: Click "New Project" -> "Deploy from GitHub repo".
-3.  **Select Repo**: Choose your `expense` repository.
-4.  **Configuration**: Railway will automatically detect the `Dockerfile`.
-5.  **Variables**: Go to the "Variables" tab and add your environment variables (`DB_HOST`, `DB_PASSWORD`, etc.).
-    *   *Tip*: You can also add a MySQL plugin directly in Railway and link it to your project.
-6.  **Deploy**: Railway will automatically deploy. Future pushes to `main` will trigger a redeploy.
+AWS App Runner is the easiest way to deploy containerized web applications on AWS.
 
-#### Render.com
+1.  **Console**: Go to the [AWS App Runner Console](https://console.aws.amazon.com/apprunner).
+2.  **Create Service**: Click "Create service".
+3.  **Source**: Select "Source code repository" and connect your GitHub account.
+4.  **Repo**: Select `expense` and the branch `main` (or `rel-v1.0.0`).
+5.  **Deployment Settings**: Choose "Automatic" to deploy on every push.
+6.  **Build Settings**:
+    - **Runtime**: Select "Node.js 18".
+    - **Build Command**: `npm install && npm run build`
+    - **Start Command**: `npm run start:prod` (ensure this script exists in package.json, or use `node dist/main.js`)
+    - *Alternative*: You can also choose "Source image" if you push your Docker image to ECR, but "Source code" is easier.
+7.  **Variables**: Add your environment variables (`DB_HOST`, `DB_PASSWORD`, etc.) in the "Configuration" step.
+8.  **Create**: Click "Create & deploy".
 
-1.  **New Web Service**: Go to [Render](https://render.com/) -> "New" -> "Web Service".
-2.  **Connect Repo**: Connect your GitHub account and select the repo.
-3.  **Runtime**: Select "Docker".
-4.  **Environment**: Add your environment variables in the "Environment" section.
-5.  **Create**: Click "Create Web Service". Render will watch your branch and auto-deploy on push.
+**Custom Domain on AWS:**
+1.  Go to your App Runner service -> "Custom domains".
+2.  Add your domain (e.g., `api.example.com`).
+3.  AWS will provide CNAME records. Add these to your DNS provider (Route53, GoDaddy, etc.).
+4.  Certificate validation and SSL setup are automatic.
+
+#### Option 2: Google Cloud Run (Recommended for GCP)
+
+1.  **Console**: Go to [Google Cloud Run](https://console.cloud.google.com/run).
+2.  **Create Service**: Click "Create Service".
+3.  **Source**: Click "Continuously deploy new revisions from a source repository".
+4.  **Cloud Build**: Click "Set up with Cloud Build".
+    - Connect your GitHub repository.
+    - Select the branch.
+    - **Build Type**: Select "Dockerfile" (it will use the one in your repo).
+5.  **Authentication**: Allow unauthenticated invocations (so it's public).
+6.  **Variables**: Expand "Container, Variables & Secrets" -> "Variables" tab to add `DB_HOST`, etc.
+7.  **Create**: Click "Create". Cloud Build will build your Docker image and deploy it to Cloud Run.
+
+**Custom Domain on GCP:**
+1.  Go to "Manage Custom Domains" in the Cloud Run console.
+2.  Click "Add Mapping".
+3.  Select your service and domain.
+4.  Add the provided DNS records to your domain registrar.
 
 ## Custom Domain Setup
 
