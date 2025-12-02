@@ -29,8 +29,8 @@ Set up environment variables: Create a .env file in the root directory. You can 
 
 DB_HOST=localhost
 DB_PORT=3306
-DB_USERNAME=root
-DB_PASSWORD=password
+DB_USERNAME=your_usename
+DB_PASSWORD=your_password
 DB_DATABASE=expense_db
 JWT_SECRET=your_jwt_secret
 Running the Application
