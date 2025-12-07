@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Query, UnauthorizedException } from '@nestjs/common';
+import {BadRequestException, Controller, Get, Post, Query, UnauthorizedException} from '@nestjs/common';
 import { AuthService } from './auth.service';
+import {UserService} from './user.service';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService,
+                private readonly userService: UserService) {}
 
     @Get('login')
     async login(
@@ -18,4 +20,18 @@ export class AuthController {
 
         return this.authService.generateToken(user);
     }
+
+    @Post('register')
+    async register(
+        @Query('username') username: string,
+        @Query('password') password: string,
+    ) {
+        if (!username || !password) {
+            throw new BadRequestException('Username & password are required');
+        }
+
+        const user = await this.userService.createUser(username, password);
+        return { message: 'User created', userId: user.id };
+    }
+
 }

@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import {AuthModule} from "./auth/auth.module";
-import { Expense } from './libs/common/src';
+import {Expense, User} from './libs/common/src';
 import { ExpenseModule } from './expense/expense.module';
 
 @Module({
@@ -25,7 +25,7 @@ import { ExpenseModule } from './expense/expense.module';
             username: 'root',
             password: '',
             database: 'expensedb',
-            entities: [Expense],
+            entities: [Expense, User],
             synchronize: true,
         }),
 
