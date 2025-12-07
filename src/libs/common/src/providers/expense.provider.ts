@@ -6,6 +6,5 @@ export const ExpenseProviders = [
     {
         provide: Providers.EXPENSE_REPOSITORY,
         useFactory: (dataSource: DataSource) => dataSource.getRepository(Expense),
-        inject: [Providers.TENANCY_DATA_SOURCE],
     }
 ]
