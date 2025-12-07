@@ -11,6 +11,7 @@ import {
 import {Repository} from 'typeorm';
 import {JwtPayload} from "jsonwebtoken";
 import {PinoLogger} from 'nestjs-pino';
+import {AiService} from "../ai/ai.service";
 import {InjectRepository} from "@nestjs/typeorm";
 
 @Injectable()
@@ -18,6 +19,7 @@ export class ExpenseService {
     constructor(
         @InjectRepository(Expense)
         private readonly expenseRepository: Repository<Expense>,
+        private readonly aiService: AiService,
         private readonly logger: PinoLogger,
     ) {
         this.logger.setContext(ExpenseService.name);
@@ -126,8 +128,6 @@ export class ExpenseService {
             title,
             amount,
             category,
-            // createdBy: user.id,
-            // updatedBy: user.id,
         });
         try {
             await this.expenseRepository.save(expense);
@@ -142,37 +142,63 @@ export class ExpenseService {
                 code: error.code,
                 detail: error.detail,
             });
-            throw error; // TEMPORARILY rethrow the original error
             throw new NotFoundException();
         }
     }
 
+    async aiCreateExpense(parsed: any): Promise<Expense> {
+        const { title, amount, category } = parsed;
+
+        const expense = this.expenseRepository.create({
+            title,
+            amount,
+            category,
+        });
+
+        let saved: Expense;
+        saved = await this.expenseRepository.save(expense);
+
+        return saved;
+    }
+
+
     async updateExpense(
         updateExpenseDto: UpdateExpenseDto,
         user: JwtPayload,
-    ): Promise<Expense> {
+        aiSuggest: boolean,
+    ): Promise<any> {
 
-        const {id, title, amount, category} = updateExpenseDto;
+        const { id, title, amount, category } = updateExpenseDto;
 
         let expense = await this.fetchExpense(id);
 
         expense.title = title;
         expense.amount = amount;
         expense.category = category;
-        //expense.updatedBy = user.id;
+
         try {
             await this.expenseRepository.save(expense);
-
             this.logger.info('Updated expense.');
 
             expense = await this.fetchExpense(id);
 
-            return expense;
+            if (aiSuggest) {
+                const suggestion = await this.aiService.suggestCategory(title || expense.title);
+
+                return {
+                    expense,
+                    aiSuggestion: suggestion
+                };
+            }
+
+            return { expense };
+
         } catch (error) {
             this.logger.error('Failed to update expense.', error.stack);
             throw new NotFoundException();
         }
     }
+
 
     async deleteExpense(deleteExpenseDto: DeleteExpenseDto): Promise<void> {
         const {id} = deleteExpenseDto;

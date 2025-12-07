@@ -3,12 +3,14 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import {AuthModule} from "./auth/auth.module";
+import {AiModule} from "./ai/ai.module";
 import {Expense, User} from './libs/common/src';
 import { ExpenseModule } from './expense/expense.module';
 
 @Module({
     imports: [
         AuthModule,
+        AiModule,
         ConfigModule.forRoot({
             isGlobal: true,
         }),

@@ -7,9 +7,10 @@ import {
     Query,
     UseGuards,
     ValidationPipe,
-    Put,
+    Put, Req, BadRequestException,
 } from '@nestjs/common';
 import { ExpenseService } from "./expense.service";
+import {AiService} from "../ai/ai.service";
 import {
     CreateExpenseDto,
     DeleteExpenseDto,
@@ -18,8 +19,6 @@ import {
     GetExpensesDto,
     UpdateExpenseDto,
 } from "../libs/common/src"
-import { JwtPayload } from "../libs/common/src";
-import { GetUser } from "../libs/common/src/decorator";
 import { PinoLogger } from 'nestjs-pino';
 import { AuthGuard } from "@nestjs/passport";
 
@@ -27,6 +26,7 @@ import { AuthGuard } from "@nestjs/passport";
 @UseGuards(AuthGuard('jwt'))
 export class ExpenseController {
     constructor(
+        private readonly aiService: AiService,
         private readonly expenseService: ExpenseService,
         private readonly logger: PinoLogger,
     ) {
@@ -60,12 +60,38 @@ export class ExpenseController {
 
     @Put()
     async updateExpense(
-        @Body() updateExpenseDto: UpdateExpenseDto,
-        @GetUser() user: JwtPayload,
-    ): Promise<Expense> {
-        this.logger.info('Updating the expense.');
-        return this.expenseService.updateExpense(updateExpenseDto, user);
+        @Body() dto: UpdateExpenseDto,
+        @Query('aiSuggest') aiSuggest: string,
+        @Req() req,
+    ) {
+        const suggest = aiSuggest === 'true';
+        return this.expenseService.updateExpense(dto, req.user, suggest);
     }
+
+    @Post('ai-parse')
+    async parseExpense(@Body('text') text: string) {
+        if (!text) {
+            throw new BadRequestException("Text is required");
+        }
+
+        const parsed = await this.aiService.parseExpense(text);
+
+        return { parsed };
+    }
+
+    @Post('ai-create')
+    async aiCreate(@Body('text') text: string) {
+        if (!text) {
+            throw new BadRequestException("Text is required");
+        }
+
+        const parsed = await this.aiService.parseExpense(text);
+
+        return this.expenseService.aiCreateExpense(parsed);
+    }
+
+
+
 
     @Delete()
     async deleteExpense(
