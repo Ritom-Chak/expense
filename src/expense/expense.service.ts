@@ -8,7 +8,7 @@ import {
     UpdateExpenseDto,
     SortOrder
 } from "../libs/common/src";
-import {Repository} from 'typeorm';
+import {MoreThan, Repository} from 'typeorm';
 import {JwtPayload} from "jsonwebtoken";
 import {PinoLogger} from 'nestjs-pino';
 import {AiService} from "../ai/ai.service";
@@ -160,6 +160,69 @@ export class ExpenseService {
 
         return saved;
     }
+
+    async generateAiInsights(user: JwtPayload) {
+        const since = new Date();
+        since.setDate(since.getDate() - 30);
+
+        const expenses = await this.expenseRepository.find({
+            where: {
+                createdAt: MoreThan(since),
+            },
+            order: { createdAt: 'ASC' },
+        });
+
+        const categoryTotals: Record<string, number> = {};
+        let total = 0;
+
+        for (const exp of expenses) {
+            categoryTotals[exp.category] =
+                (categoryTotals[exp.category] || 0) + exp.amount;
+            total += exp.amount;
+        }
+
+        const payload = {
+            totalSpent: total,
+            categoryTotals,
+            count: expenses.length,
+            fromDate: since.toISOString(),
+            toDate: new Date().toISOString(),
+        };
+
+        const insights = await this.aiService.generateInsights(payload);
+
+        return { insights };
+    }
+
+    async handleAiQuery(query: string, user: JwtPayload) {
+        const structured = await this.aiService.convertQuery(query);
+        const result = await this.executeStructuredQuery(structured, user);
+
+        const answer = await this.aiService.formatQueryAnswer(query, result);
+
+        return { answer };
+    }
+
+    async executeStructuredQuery(structured: any, user: JwtPayload) {
+        switch (structured.type) {
+            case "merchant_total":
+                return this.expenseRepository
+                    .createQueryBuilder("exp")
+                    .where("exp.title LIKE :m", { m: `%${structured.merchant}%` })
+                    .select("SUM(exp.amount)", "total")
+                    .getRawOne();
+
+            case "category_total":
+                return this.expenseRepository
+                    .createQueryBuilder("exp")
+                    .where("exp.category = :cat", { cat: structured.category })
+                    .select("SUM(exp.amount)", "total")
+                    .getRawOne();
+        }
+    }
+
+
+
 
 
     async updateExpense(

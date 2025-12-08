@@ -68,6 +68,12 @@ export class ExpenseController {
         return this.expenseService.updateExpense(dto, req.user, suggest);
     }
 
+    @Post('insights')
+    async aiAsk(@Body('query') query: string, @Req() req) {
+        return this.expenseService.handleAiQuery(query, req.user);
+    }
+
+
     @Post('ai-parse')
     async parseExpense(@Body('text') text: string) {
         if (!text) {
